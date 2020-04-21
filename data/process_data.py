@@ -4,6 +4,11 @@ import numpy as np
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    '''
+     Function reads in both datasets
+     It returns a dataframe with messages and categories merged on 'id'
+     
+    '''
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = messages.merge(categories, on='id')
@@ -12,6 +17,11 @@ def load_data(messages_filepath, categories_filepath):
     
 
 def clean_data(df):
+    '''
+    This is the transformation step of the ETL process:
+    Function splits the categories column into separate, clearly named columns,
+    converts values to binary, and drops duplicates.
+    '''
     categories = df.categories.str.split(';', expand=True)
     first_row = categories.iloc[0] # select the first row of the categories dataframe
     category_colnames = first_row.apply(lambda x: x[:-2]) # Extract colum names
@@ -31,11 +41,17 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    '''
+    This is the load step of the ETL process. Function writes the dataframe into an SQLite database in the specified database file path.
+    '''
     engine = create_engine('sqlite:///'+database_filename)
     df.to_sql(database_filename, engine, index=False) 
 
 
 def main():
+    '''
+    Combines all three functions above to perform the ETL process taking user input: messages_filepath, categories_filepath, database_filepath
+    '''
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
